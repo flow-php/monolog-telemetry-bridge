@@ -14,13 +14,7 @@ use function is_object;
 use function is_scalar;
 use function method_exists;
 
-/**
- * Normalize arbitrary PHP values to types acceptable by Telemetry attributes.
- *
- * This class handles the conversion of various PHP types to the subset of types
- * that can be stored as Telemetry log record attributes.
- */
-final readonly class ValueNormalizer
+final readonly class AttributeValueNormalizer
 {
     /**
      * @return string|int|float|bool|DateTimeInterface|Throwable|array<array-key, mixed>

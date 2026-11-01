@@ -7,7 +7,7 @@ namespace Flow\Bridge\Monolog\Telemetry\Tests\Unit;
 use DateTime;
 use DateTimeImmutable;
 use Error;
-use Flow\Bridge\Monolog\Telemetry\ValueNormalizer;
+use Flow\Bridge\Monolog\Telemetry\AttributeValueNormalizer;
 use Generator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -18,8 +18,8 @@ use stdClass;
 use function fclose;
 use function fopen;
 
-#[CoversClass(ValueNormalizer::class)]
-final class ValueNormalizerTest extends TestCase
+#[CoversClass(AttributeValueNormalizer::class)]
+final class AttributeValueNormalizerTest extends TestCase
 {
     /**
      * @return \Generator<string, array{mixed, mixed}>
@@ -38,7 +38,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_anonymous_class_without_to_string(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $object = new class {
             public string $prop = 'value';
         };
@@ -51,7 +51,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_array_recursively(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $input = [
             'name' => 'John',
             'age' => 30,
@@ -68,7 +68,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_array_with_null_values(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $input = [
             'value' => null,
             'other' => 'test',
@@ -83,7 +83,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_array_with_objects(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $object = new class {
             public function __toString(): string
             {
@@ -105,7 +105,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_closed_resource_to_debug_type(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $resource = fopen('php://memory', 'rb');
         static::assertIsResource($resource);
         fclose($resource);
@@ -117,7 +117,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_datetime_unchanged(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $datetime = new DateTimeImmutable('2024-01-15 10:30:00');
 
         static::assertSame($datetime, $normalizer->normalize($datetime));
@@ -125,7 +125,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_error_unchanged(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $error = new Error('Fatal error');
 
         static::assertSame($error, $normalizer->normalize($error));
@@ -133,7 +133,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_mutable_datetime_unchanged(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $datetime = new DateTime('2024-01-15 10:30:00');
 
         static::assertSame($datetime, $normalizer->normalize($datetime));
@@ -141,7 +141,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_nested_arrays(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $input = [
             'user' => [
                 'name' => 'John',
@@ -166,14 +166,14 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_null_to_string(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
 
         static::assertSame('null', $normalizer->normalize(null));
     }
 
     public function test_normalizes_object_with_to_string(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $object = new class {
             public function __toString(): string
             {
@@ -186,7 +186,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_object_without_to_string_to_class_name(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $object = new stdClass();
 
         static::assertSame('stdClass', $normalizer->normalize($object));
@@ -194,7 +194,7 @@ final class ValueNormalizerTest extends TestCase
 
     public function test_normalizes_resource_to_debug_type(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $resource = fopen('php://memory', 'rb');
         static::assertIsResource($resource);
 
@@ -208,14 +208,14 @@ final class ValueNormalizerTest extends TestCase
     #[DataProvider('scalarValuesProvider')]
     public function test_normalizes_scalar_values_unchanged(mixed $input, mixed $expected): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
 
         static::assertSame($expected, $normalizer->normalize($input));
     }
 
     public function test_normalizes_throwable_unchanged(): void
     {
-        $normalizer = new ValueNormalizer();
+        $normalizer = new AttributeValueNormalizer();
         $exception = new RuntimeException('Something went wrong');
 
         static::assertSame($exception, $normalizer->normalize($exception));
